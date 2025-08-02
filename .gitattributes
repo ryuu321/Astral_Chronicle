@@ -1,0 +1,2 @@
+Assets/Sawarabi_Gothic/SawarabiGothic-Regular-SDF.asset filter=lfs diff=lfs merge=lfs -text
+*.asset filter=lfs diff=lfs merge=lfs -text

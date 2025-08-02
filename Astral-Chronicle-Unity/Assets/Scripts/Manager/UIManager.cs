@@ -45,6 +45,9 @@ public class UIManager : MonoBehaviour
             retryButton.gameObject.SetActive(false);
         }
         constellationSelectionPanel.SetActive(false); // 初期は非表示に
+        retryButton.onClick.AddListener(() => {
+            GameManager.instance.LoadCurrentScene(); // ボタンが押されたらこの中身が実行される
+        });
     }
 
     // ---------- ゲームオーバーUI関連 ----------

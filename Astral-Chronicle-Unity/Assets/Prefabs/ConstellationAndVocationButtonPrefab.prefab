@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 3412293143102931613}
   - component: {fileID: 799795642142734566}
   m_Layer: 5
-  m_Name: ConstellationButtonPrefab
+  m_Name: ConstellationAndVocationButtonPrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

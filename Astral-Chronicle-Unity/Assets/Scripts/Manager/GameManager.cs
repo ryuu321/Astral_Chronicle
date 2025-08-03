@@ -6,18 +6,20 @@ using System.Collections.Generic; // List<T> を使うため
 
 public class GameManager : MonoBehaviour
 {
-    // UIManagerが管理するUI参照はGameManagerから削除済みであることを確認
+    // UI参照は全てUIManagerに移動済み
 
-    [Header("Game Data")]
+    [Header("Game Data References")]
     // 修正: List<ConstellationData> の代わりに ConstellationDatabase を参照
-    public ConstellationDatabase constellationDatabase;
+    public ConstellationDatabase constellationDatabase; // ConstellationDatabaseアセットの参照
+    public VocationDatabase vocationDatabase; // 職業データベースへの参照 (以前の追加分)
 
     public static GameManager instance;
 
-    public ConstellationData selectedConstellation { get; private set; }
+    public ConstellationData selectedConstellation { get; private set; } // 選択された星座データ
+    public VocationData selectedVocation { get; private set; } // 選択された職業データ (以前の追加分)
 
     private PlayerHealth currentPlayerHealth;
-    private PlayerStatus currentPlayerStatus; // 追加: PlayerStatusへの参照
+    public PlayerStatus currentPlayerStatus { get; private set; }  // 追加: PlayerStatusへの参照
 
 
     void Awake()
@@ -54,6 +56,7 @@ public class GameManager : MonoBehaviour
         {
             UIManager.instance.HideGameOverUI(); // UIManagerに隠してもらう
             UIManager.instance.HideConstellationSelectionUI(); // UIManagerに隠してもらう (初期状態として)
+            UIManager.instance.HideVocationSelectionUI(); // 職業選択UIも初期は非表示
         }
         else
         {
@@ -77,7 +80,7 @@ public class GameManager : MonoBehaviour
             // PlayerStatusが見つからない場合のエラーチェック
             if (currentPlayerStatus == null)
             {
-                Debug.LogWarning("PlayerStatus component not found on Player object! Player stats will not be affected by constellation.");
+                Debug.LogWarning("PlayerStatus component not found on Player object! Player stats will not be affected by constellation or vocation.");
             }
         }
         else
@@ -86,8 +89,63 @@ public class GameManager : MonoBehaviour
         }
 
         // 星座選択UIの表示プロセスを開始
-        StartConstellationSelectionProcess();
+        //StartConstellationSelectionProcess();
+        StartVocationSelectionProcess();
     }
+
+    // ゲーム時間管理 (以前の追加分)
+    [Header("ゲーム時間管理")]
+    public float timePerGameMonth = 5f; // 現実世界の5秒でゲーム内1ヶ月経過 (調整可能)
+    private float gameTimeTimer = 0f;
+    private int currentMonth = 0; // 現在のゲーム内月数
+    private int currentYear = 0;  // 現在のゲーム内年数
+
+    [Header("幼少期設定")]
+    public int childhoodYears = 5; // 幼少期の期間 (ゲーム内年数)
+
+    // Update メソッド (ゲーム時間進行と信託の儀呼び出し)
+    void Update()
+    {
+        // ゲームが停止中でない場合のみ時間を進める
+        if (Time.timeScale > 0f)
+        {
+            gameTimeTimer += Time.deltaTime; // 現実の時間を加算
+
+            if (gameTimeTimer >= timePerGameMonth)
+            {
+                gameTimeTimer -= timePerGameMonth; // タイマーをリセット
+                currentMonth++; // 月を進める
+
+                if (currentMonth >= 12) // 12ヶ月で1年
+                {
+                    currentMonth = 1;
+                    currentYear++; // 年を進める
+                                   // Debug.Log("ゲーム内時間: " + currentYear + "歳 " + (currentMonth + 1) + "ヶ月"); // デバッグログはUI表示に置き換える
+
+                    // UIの更新
+                    if (UIManager.instance != null)
+                    {
+                        UIManager.instance.UpdateGameTimeDisplay(currentYear, currentMonth);
+                    }
+
+                    // 5年経過チェック (幼少期終了)
+                    if (currentYear >= childhoodYears)
+                    {
+                        Debug.Log("5歳になりました！信託の儀の準備をします。");
+                        Time.timeScale = 0f; // ゲーム時間を停止
+
+                        // 幼少期タイマーを停止させるため、非常に大きな値にするか、boolフラグで制御
+                        // これにより、職業選択中に時間が進むのを防ぎ、一度しか呼ばれないようにする
+                        gameTimeTimer = float.MaxValue; // これでこれ以上Updateが条件を満たさないようにする
+                                                        // あるいは bool childhoodEnded = true; If (!childhoodEnded) { ... } とする
+
+                        StartVocationSelectionProcess(); // 職業選択プロセスを開始
+                    }
+                }
+            }
+        }
+    }
+
 
     // 星座選択プロセスを開始するメソッド (チュートリアルから呼び出される想定)
     void StartConstellationSelectionProcess()
@@ -147,7 +205,7 @@ public class GameManager : MonoBehaviour
 
         // 以降のゲーム開始ロジック (例: 5年間の自由な期間の開始、プレイヤー操作開始など)
         Debug.Log("ゲームが開始されます（5年間の自由期間開始）");
-        // ここからチュートリアル後のゲーム進行が始まる
+        // この時点で5年間のゲーム内時間が動き出す
     }
 
     // 選択された星座のバフをプレイヤーに適用するメソッド
@@ -171,6 +229,98 @@ public class GameManager : MonoBehaviour
             Debug.LogWarning("PlayerStatus component not found on Player object! Cannot apply constellation buffs.");
         }
     }
+
+
+    // 職業選択プロセスを開始するメソッド (5年経過後に呼ばれる)
+    void StartVocationSelectionProcess()
+    {
+        if (vocationDatabase == null)
+        {
+            Debug.LogError("Vocation Database is not assigned in GameManager!");
+            enabled = false;
+            return;
+        }
+        if (currentPlayerStatus == null)
+        {
+            Debug.LogError("PlayerStatus is not assigned or found! Cannot determine vocations for selection.");
+            return;
+        }
+
+        List<VocationData> availableVocations = new List<VocationData>();
+
+        // 全ての職業をループし、プレイヤーの経験値が条件を満たしているかチェック
+        foreach (VocationData vocation in vocationDatabase.allVocations)
+        {
+            bool canSelect = true;
+            if (currentPlayerStatus.combatExperience < vocation.requiredCombatExperience) canSelect = false;
+            if (currentPlayerStatus.gatheringExperience < vocation.requiredGatheringExperience) canSelect = false;
+            if (currentPlayerStatus.craftingExperience < vocation.requiredCraftingExperience) canSelect = false;
+            if (currentPlayerStatus.explorationExperience < vocation.requiredExplorationExperience) canSelect = false;
+            if (currentPlayerStatus.socialExperience < vocation.requiredSocialExperience) canSelect = false;
+
+            if (canSelect)
+            {
+                availableVocations.Add(vocation);
+            }
+        }
+
+        // 少なくとも1つは選択肢があるように保証する（例: 全ての職業が条件を満たさない場合）
+        if (availableVocations.Count == 0 && vocationDatabase.allVocations.Count > 0)
+        {
+            Debug.LogWarning("No vocations meet the player's experience requirements. Presenting all available vocations as fallback.");
+            availableVocations.AddRange(vocationDatabase.allVocations); // 全ての職業を提示する例
+        }
+        else if (availableVocations.Count == 0) // VocationDatabase自体が空の場合
+        {
+            Debug.LogError("No vocations defined in VocationDatabase! Cannot present vocation choices.");
+            enabled = false;
+            return;
+        }
+
+
+        // UIManagerに表示可能な職業リストを渡し、選択された際のコールバックを登録
+        if (UIManager.instance != null)
+        {
+            UIManager.instance.ShowVocationSelectionUI(availableVocations, SelectVocation);
+        }
+    }
+
+    // 職業が選択された時の処理 (UIManagerからのコールバック)
+    void SelectVocation(VocationData selectedVocationData)
+    {
+        this.selectedVocation = selectedVocationData; // 選択された職業データを保持
+        Debug.Log(selectedVocationData.vocationName + "が選択されました！");
+
+        // プレイヤーに職業ボーナスを適用する
+        ApplyVocationBonus(selectedVocationData);
+
+        Time.timeScale = 1f; // ゲーム時間を再開
+        Debug.Log("信託の儀が完了しました。新たな人生が始まります！");
+        // ここからゲームの次の段階（冒険開始、王都への移動など）に進む
+    }
+
+    // 選択された職業のボーナスをプレイヤーに適用するメソッド
+    void ApplyVocationBonus(VocationData vocation)
+    {
+        if (currentPlayerStatus != null)
+        {
+            Debug.Log("職業ボーナス適用: " + vocation.vocationName +
+                      " 筋力+" + vocation.strengthBonus + ", 器用さ+" + vocation.dexterityBonus +
+                      ", 知力+" + vocation.intelligenceBonus + ", 生命力+" + vocation.vitalityBonus);
+
+            currentPlayerStatus.ApplyVocationBonus(
+                vocation.strengthBonus,
+                vocation.dexterityBonus,
+                vocation.intelligenceBonus,
+                vocation.vitalityBonus
+            );
+        }
+        else
+        {
+            Debug.LogWarning("PlayerStatus component not found on Player object! Cannot apply vocation bonuses.");
+        }
+    }
+
 
     // ゲームオーバー処理 (PlayerHealthから呼ばれる)
     public void HandleGameOver()

@@ -4,11 +4,21 @@ using UnityEngine;
 
 public class PlayerStatus : MonoBehaviour
 {
+    [Header("現在の職業")]
+    public VocationData currentVocation; // 現在の職業を保持 (Inspectorで確認用)
+
     // 基本能力値
     public int strength;    // 筋力
     public int dexterity;   // 器用さ
     public int intelligence; // 知力
     public int vitality;    // 生命力
+
+    [Header("行動パラメータ")]
+    public int combatExperience = 0;    // 戦闘経験（敵を倒す、戦闘イベントに参加など）
+    public int gatheringExperience = 0; // 採集経験（素材を採集など）
+    public int craftingExperience = 0;  // 生産経験（アイテムをクラフトなど）
+    public int explorationExperience = 0; // 探索経験（隠しエリア発見、NPCとの会話など）
+    public int socialExperience = 0;    // 社会経験/交流度（NPCとの会話、クエスト完了など）
 
     // レベルと経験値 (将来的に追加)
     public int level = 1;
@@ -67,6 +77,30 @@ public class PlayerStatus : MonoBehaviour
 
         // ボーナス適用後に派生ステータスと最大体力を再計算
         CalculateDerivedStats();
+    }
+
+    // 職業星座による初期ボーナスを適用するメソッド
+    public void ApplyVocationBonus(int strengthBonus, int dexterityBonus, int intelligenceBonus, int vitalityBonus)
+    {
+        this.strength += strengthBonus;
+        this.dexterity += dexterityBonus;
+        this.intelligence += intelligenceBonus;
+        this.vitality += vitalityBonus;
+
+        // 最大体力にも生命力ボーナスを反映
+        // GameManager.instance.currentPlayerHealth を直接参照するのをやめる
+        if (playerHealth != null) // PlayerStatus自身のplayerHealth参照を使用
+        {
+            playerHealth.maxHealth += vitalityBonus * 5; // 例: 生命力1につき最大体力5増加
+            playerHealth.Heal(vitalityBonus * 5); // 増えた分回復（Healで最大値を超えないように制御される）
+        }
+        else
+        {
+            Debug.LogWarning("PlayerHealth component not found for PlayerStatus! Cannot update max health from vocation bonus.");
+        }
+
+        Debug.Log("職業ボーナス適用後のステータス: 筋力:" + this.strength + ", 器用さ:" + this.dexterity +
+                  ", 知力:" + this.intelligence + ", 生命力:" + this.vitality);
     }
 
     // レベルアップ処理 (将来的に追加)

@@ -1,3 +1,4 @@
+
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
@@ -21,14 +22,30 @@ public class GameManager : MonoBehaviour
     private PlayerHealth currentPlayerHealth;
     public PlayerStatus currentPlayerStatus { get; private set; }  // 追加: PlayerStatusへの参照
 
+    private bool isGameStarted = false; // 追加: ゲームが開始されたかどうかのフラグ
+
+    // ゲーム時間管理 (以前の追加分)
+    [Header("ゲーム時間管理")]
+    public float secondsPerGameDay = 1; // 1 real-hour = 1 game-day
+    public int daysPerGameMonth = 30;       // 1ゲーム月の日数
+    public int monthsPerGameYear = 12;      // 1ゲーム年の月数
+
+    public float gameTimeTimer = 0f;
+    public int currentDay = 1;     // 追加: 日数の変数宣言
+    public int currentMonth = 1;   // 月を1から開始
+    public int currentYear = 0;    // 年を0から開始
+
+    [Header("幼少期設定")]
+    public int childhoodYears = 5; // 幼少期の期間 (ゲーム内年数)
+    public int pathAnnouncementAge = 6; // 6歳で進路告知
+    public int pathFinalizationAge = 7;
 
     void Awake()
     {
         if (instance == null)
         {
             instance = this;
-            // DontDestroyOnLoadは、GameManagerがシーン遷移後もデータを保持する必要がある場合に検討
-            // 今回はシーンリロードでGameManagerも再生成される前提とする（ハイスコア機能がないため）
+            DontDestroyOnLoad(gameObject);// 今回はシーンリロードでGameManagerも再生成される前提とする（ハイスコア機能がないため）
         }
         else
         {
@@ -87,68 +104,97 @@ public class GameManager : MonoBehaviour
         {
             Debug.LogWarning("Player object with 'Player' tag not found in scene!");
         }
-
-        // 星座選択UIの表示プロセスを開始
-        //StartConstellationSelectionProcess();
-        StartVocationSelectionProcess();
     }
 
-    // ゲーム時間管理 (以前の追加分)
-    [Header("ゲーム時間管理")]
-    public float timePerGameMonth = 5f; // 現実世界の5秒でゲーム内1ヶ月経過 (調整可能)
-    private float gameTimeTimer = 0f;
-    private int currentMonth = 0; // 現在のゲーム内月数
-    private int currentYear = 0;  // 現在のゲーム内年数
-
-    [Header("幼少期設定")]
-    public int childhoodYears = 5; // 幼少期の期間 (ゲーム内年数)
-
-    // Update メソッド (ゲーム時間進行と信託の儀呼び出し)
     void Update()
     {
-        // ゲームが停止中でない場合のみ時間を進める
-        if (Time.timeScale > 0f)
+        // ゲームが停止中でない、かつ幼少期が終了していない場合のみ時間を進める
+        // gameTimeTimer = float.MaxValue; で時間を止めているので、そのチェックも追加
+        if (Time.timeScale <= 0f || gameTimeTimer == float.MaxValue || !isGameStarted) // <=0f は停止中、float.MaxValueは幼少期終了
         {
-            gameTimeTimer += Time.deltaTime; // 現実の時間を加算
+            return; // 時間を進める必要がなければここで処理を終了
+        }
 
-            if (gameTimeTimer >= timePerGameMonth)
+        gameTimeTimer += Time.deltaTime; // 現実の時間を加算
+
+        // 日の進行チェック
+        if (gameTimeTimer >= secondsPerGameDay)
+        {
+            gameTimeTimer -= secondsPerGameDay; // 余りを残してタイマーをリセット
+            currentDay++; // 日を進める
+
+            // 月の進行チェック
+            if (currentDay > daysPerGameMonth)
             {
-                gameTimeTimer -= timePerGameMonth; // タイマーをリセット
+                currentDay = 1; // 日を1にリセット
                 currentMonth++; // 月を進める
 
-                if (currentMonth >= 12) // 12ヶ月で1年
+                // 年の進行チェック
+                if (currentMonth > monthsPerGameYear)
                 {
-                    currentMonth = 1;
+                    currentMonth = 1; // 月を1にリセット
                     currentYear++; // 年を進める
-                                   // Debug.Log("ゲーム内時間: " + currentYear + "歳 " + (currentMonth + 1) + "ヶ月"); // デバッグログはUI表示に置き換える
-
-                    // UIの更新
-                    if (UIManager.instance != null)
-                    {
-                        UIManager.instance.UpdateGameTimeDisplay(currentYear, currentMonth);
-                    }
-
-                    // 5年経過チェック (幼少期終了)
-                    if (currentYear >= childhoodYears)
-                    {
-                        Debug.Log("5歳になりました！信託の儀の準備をします。");
-                        Time.timeScale = 0f; // ゲーム時間を停止
-
-                        // 幼少期タイマーを停止させるため、非常に大きな値にするか、boolフラグで制御
-                        // これにより、職業選択中に時間が進むのを防ぎ、一度しか呼ばれないようにする
-                        gameTimeTimer = float.MaxValue; // これでこれ以上Updateが条件を満たさないようにする
-                                                        // あるいは bool childhoodEnded = true; If (!childhoodEnded) { ... } とする
-
-                        StartVocationSelectionProcess(); // 職業選択プロセスを開始
-                    }
                 }
+            }
+
+            // UIの更新 (日、月、年が変更されたら)
+            // UpdateGameTimeDisplayは、日、月、年のどれかが変わったら呼ぶ
+            if (UIManager.instance != null)
+            {
+                UIManager.instance.UpdateGameTimeDisplay(currentYear, currentMonth, currentDay);
+            }
+
+            // 幼少期終了チェック (年が進んだ後にのみチェック)
+            // currentYearが childhoodYears に到達した瞬間に処理
+            if (currentYear == childhoodYears && currentMonth == 1 && currentDay == 1)
+            {
+                Debug.Log("5歳になりました！信託の儀の準備をします。");
+                Time.timeScale = 0f; // ゲーム時間を停止
+                StartVocationSelectionProcess(); // 職業選択プロセスを開始
+                return;
+            }
+            // 6歳チェック (進路告知イベント)
+            if (currentYear == pathAnnouncementAge && currentMonth == 1 && currentDay == 1)
+            {
+                Debug.Log("6歳になりました。メンターが話しかけてきます。");
+                Time.timeScale = 0f;
+                DialogueManager.instance.StartPathAnnouncementDialogue(OnPathAnnouncementDialogueEnd);
+                return;
+            }
+            // 7歳チェック (進路決定イベント)
+            if (currentYear == pathFinalizationAge && currentMonth == 1 && currentDay == 1)
+            {
+                Debug.Log("7歳になりました。進路を最終決定します。");
+                Time.timeScale = 0f;
+                DialogueManager.instance.StartPathFinalizationDialogue(OnPathFinalizationDialogueEnd);
+                return;
             }
         }
     }
 
+    bool ShouldUnlockHiddenConstellations()
+    {
+        // 例えば、プレイヤーの採集経験値が100以上の場合に開放
+        if (currentPlayerStatus != null && currentPlayerStatus.gatheringExperience >= 100)
+        {
+            return true;
+        }
+
+        return false; // 最初は常にfalseで隠し星座は表示しない
+    }
+
+    void SelectConstellation(ConstellationData selectedConstellationData)
+    {
+        if (currentPlayerStatus != null)
+        {
+            currentPlayerStatus.SetConstellation(selectedConstellationData);
+        }
+        isGameStarted = true;
+        Debug.Log("ゲームが開始されます（5年間の自由期間開始）");
+    }
 
     // 星座選択プロセスを開始するメソッド (チュートリアルから呼び出される想定)
-    void StartConstellationSelectionProcess()
+    public void StartConstellationSelectionProcess()
     {
         // 修正: ConstellationDatabaseが割り当てられているか確認
         if (constellationDatabase == null)
@@ -182,54 +228,13 @@ public class GameManager : MonoBehaviour
         if (UIManager.instance != null)
         {
             UIManager.instance.ShowConstellationSelectionUI(availableConstellations, SelectConstellation);
+
+            isGameStarted = true;
+            // 以降のゲーム開始ロジック (例: 5年間の自由な期間の開始、プレイヤー操作開始など)
+            Debug.Log("ゲームが開始されます（5年間の自由期間開始）");
+            // この時点で5年間のゲーム内時間が動き出す
         }
     }
-
-    // 仮の隠し星座開放条件 (テスト用)
-    // 実際のゲームでは、プレイヤーのパラメータやフラグに基づいて複雑なロジックを記述
-    bool ShouldUnlockHiddenConstellations()
-    {
-        // 例: (デバッグ目的で常にtrueにするか、特定のボタンを押した時など)
-        return false; // 最初は常にfalseで隠し星座は表示しない
-    }
-
-
-    // 星座が選択された時の処理 (UIManagerからのコールバック)
-    void SelectConstellation(ConstellationData selectedConstellationData)
-    {
-        this.selectedConstellation = selectedConstellationData; // 選択された星座データを保持
-        Debug.Log(selectedConstellationData.constellationName + "が選択されました！");
-
-        // プレイヤーにバフを適用する
-        ApplyConstellationBuff(selectedConstellationData);
-
-        // 以降のゲーム開始ロジック (例: 5年間の自由な期間の開始、プレイヤー操作開始など)
-        Debug.Log("ゲームが開始されます（5年間の自由期間開始）");
-        // この時点で5年間のゲーム内時間が動き出す
-    }
-
-    // 選択された星座のバフをプレイヤーに適用するメソッド
-    void ApplyConstellationBuff(ConstellationData constellation)
-    {
-        if (currentPlayerStatus != null) // PlayerStatusが存在すれば適用
-        {
-            Debug.Log("星座バフ適用: " + constellation.constellationName +
-                      " 筋力+" + constellation.initialStrengthBonus + ", 器用さ+" + constellation.initialDexterityBonus +
-                      ", 知力+" + constellation.initialIntelligenceBonus + ", 生命力+" + constellation.initialVitalityBonus);
-
-            currentPlayerStatus.ApplyInitialStatBonus(
-                constellation.initialStrengthBonus,
-                constellation.initialDexterityBonus,
-                constellation.initialIntelligenceBonus,
-                constellation.initialVitalityBonus
-            );
-        }
-        else
-        {
-            Debug.LogWarning("PlayerStatus component not found on Player object! Cannot apply constellation buffs.");
-        }
-    }
-
 
     // 職業選択プロセスを開始するメソッド (5年経過後に呼ばれる)
     void StartVocationSelectionProcess()
@@ -288,37 +293,13 @@ public class GameManager : MonoBehaviour
     // 職業が選択された時の処理 (UIManagerからのコールバック)
     void SelectVocation(VocationData selectedVocationData)
     {
-        this.selectedVocation = selectedVocationData; // 選択された職業データを保持
-        Debug.Log(selectedVocationData.vocationName + "が選択されました！");
-
+        currentPlayerStatus.SetVocation(selectedVocationData); // 選択された職業データを保持
         // プレイヤーに職業ボーナスを適用する
-        ApplyVocationBonus(selectedVocationData);
+
 
         Time.timeScale = 1f; // ゲーム時間を再開
         Debug.Log("信託の儀が完了しました。新たな人生が始まります！");
         // ここからゲームの次の段階（冒険開始、王都への移動など）に進む
-    }
-
-    // 選択された職業のボーナスをプレイヤーに適用するメソッド
-    void ApplyVocationBonus(VocationData vocation)
-    {
-        if (currentPlayerStatus != null)
-        {
-            Debug.Log("職業ボーナス適用: " + vocation.vocationName +
-                      " 筋力+" + vocation.strengthBonus + ", 器用さ+" + vocation.dexterityBonus +
-                      ", 知力+" + vocation.intelligenceBonus + ", 生命力+" + vocation.vitalityBonus);
-
-            currentPlayerStatus.ApplyVocationBonus(
-                vocation.strengthBonus,
-                vocation.dexterityBonus,
-                vocation.intelligenceBonus,
-                vocation.vitalityBonus
-            );
-        }
-        else
-        {
-            Debug.LogWarning("PlayerStatus component not found on Player object! Cannot apply vocation bonuses.");
-        }
     }
 
 
@@ -331,6 +312,46 @@ public class GameManager : MonoBehaviour
         {
             UIManager.instance.ShowGameOverUI();
         }
+    }
+
+    void OnPathAnnouncementDialogueEnd()
+    {
+        Debug.Log("進路告知の会話が終了しました。7歳までの準備期間が始まります。");
+        Time.timeScale = 1f; // ゲームを再開
+        gameTimeTimer = 0f; // タイマーをリセットし、再び時間を進める
+    }
+
+    // 7歳時の進路決定ダイアログ終了時にDialogueManagerから呼ばれる
+    void OnPathFinalizationDialogueEnd()
+    {
+        Debug.Log("進路決定の会話が終了しました。");
+        Time.timeScale = 1f;
+        // TODO: ここに7歳時の進路決定後のロジックを実装
+    }
+
+
+    // DialogueManagerから呼び出され、選択肢に応じて処理を分岐
+    public void HandlePathChoice(DialogueData.DialogueOption selectedOption)
+    {
+        Debug.Log("GameManager: 進路選択を受け付けました。");
+
+        if (selectedOption.optionText == "学園へ行く")
+        {
+            Debug.Log("選択: 学園へ行く");
+        }
+        else if (selectedOption.optionText == "辺境で暮らし続ける")
+        {
+            Debug.Log("選択: 辺境に残る");
+        }
+        else if (selectedOption.optionText == "冒険者になる")
+        {
+            Debug.Log("選択: 冒険者になる");
+        }
+        else
+        {
+            Debug.LogWarning("不明な進路選択です: " + selectedOption.optionText);
+        }
+        // TODO: ここで実際のシーン遷移やプレイヤーへの影響を実装
     }
 
     // 現在のシーンをリロードする関数 (ボタンから呼ばれる)
@@ -358,5 +379,12 @@ public class GameManager : MonoBehaviour
             default: Debug.Log("未知のアイテムをゲット！: " + item.itemType.ToString()); break;
         }
         if (!string.IsNullOrEmpty(item.collectMessage)) Debug.Log("メッセージ: " + item.collectMessage);
+    }
+
+    void OnDialogueEnd()
+    {
+        // 会話が終了したら、ゲームを再開
+        Time.timeScale = 1f;
+        // TODO: ここで進路決定後のロジックを実装
     }
 }

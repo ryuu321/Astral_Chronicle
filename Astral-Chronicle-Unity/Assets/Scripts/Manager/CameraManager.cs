@@ -2,11 +2,25 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CameraFollow : MonoBehaviour
+public class CameraManager : MonoBehaviour
 {
+    public static CameraManager instance;
     public Transform target; // 追従するターゲット（プレイヤー）
     public float smoothSpeed = 0.125f; // カメラの追従の滑らかさ
     public Vector3 offset; // ターゲットからのオフセット（カメラの位置調整）
+    
+    void Awake()
+    {
+        if (instance == null)
+        {
+            instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
 
     void LateUpdate() // Updateの後でカメラを動かすのが一般的
     {

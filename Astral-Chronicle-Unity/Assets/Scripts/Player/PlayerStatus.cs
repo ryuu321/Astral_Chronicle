@@ -4,8 +4,11 @@ using UnityEngine;
 
 public class PlayerStatus : MonoBehaviour
 {
-    [Header("現在の職業")]
-    public VocationData currentVocation; // 現在の職業を保持 (Inspectorで確認用)
+    
+    public ConstellationData selectedConstellation { get; private set; }
+
+
+    public VocationData currentVocation { get; private set; } // 現在の職業を保持 (Inspectorで確認用)
 
     // 基本能力値
     public int strength;    // 筋力
@@ -65,42 +68,84 @@ public class PlayerStatus : MonoBehaviour
         }
     }
 
+    // PlayerStatus.cs に以下のメソッドを追加
+
+    public void SetConstellation(ConstellationData newConstellation)
+    {
+        selectedConstellation = newConstellation;
+        Debug.Log(selectedConstellation.constellationName + "が選択されました！");
+        ApplyConstellationBuff(selectedConstellation); // ここを修正
+    }
+
+    // 選択された星座のバフをプレイヤーに適用するメソッド
+    void ApplyConstellationBuff(ConstellationData constellation)
+    {
+                    Debug.Log("星座ボーナス適用: " + constellation.constellationName +
+                      " 筋力+" + constellation.initialStrengthBonus + ", 器用さ+" + constellation.initialDexterityBonus +
+                      ", 知力+" + constellation.initialIntelligenceBonus + ", 生命力+" + constellation.initialVitalityBonus);
+
+            ApplyStatusBonus(
+                constellation.initialStrengthBonus,
+                constellation.initialDexterityBonus,
+                constellation.initialIntelligenceBonus,
+                constellation.initialVitalityBonus
+            );
+    }
+
     // 星座による初期ボーナスを適用するメソッド
-    public void ApplyInitialStatBonus(int strengthBonus, int dexterityBonus, int intelligenceBonus, int vitalityBonus)
+    public void ApplyStatusBonus(int strengthBonus, int dexterityBonus, int intelligenceBonus, int vitalityBonus)
     {
         strength += strengthBonus;
         dexterity += dexterityBonus;
         intelligence += intelligenceBonus;
         vitality += vitalityBonus;
 
-        Debug.Log("初期ステータスボーナス適用: 筋力+" + strengthBonus + ", 器用さ+" + dexterityBonus + ", 知力+" + intelligenceBonus + ", 生命力+" + vitalityBonus);
-
         // ボーナス適用後に派生ステータスと最大体力を再計算
         CalculateDerivedStats();
     }
 
-    // 職業星座による初期ボーナスを適用するメソッド
-    public void ApplyVocationBonus(int strengthBonus, int dexterityBonus, int intelligenceBonus, int vitalityBonus)
+    public void SetVocation(VocationData newVocation)
     {
-        this.strength += strengthBonus;
-        this.dexterity += dexterityBonus;
-        this.intelligence += intelligenceBonus;
-        this.vitality += vitalityBonus;
+        currentVocation = newVocation;
+        Debug.Log(currentVocation.vocationName + "が選択されました！");
+        ApplyVocationBuff(currentVocation);
+    }
 
-        // 最大体力にも生命力ボーナスを反映
-        // GameManager.instance.currentPlayerHealth を直接参照するのをやめる
-        if (playerHealth != null) // PlayerStatus自身のplayerHealth参照を使用
-        {
-            playerHealth.maxHealth += vitalityBonus * 5; // 例: 生命力1につき最大体力5増加
-            playerHealth.Heal(vitalityBonus * 5); // 増えた分回復（Healで最大値を超えないように制御される）
-        }
-        else
-        {
-            Debug.LogWarning("PlayerHealth component not found for PlayerStatus! Cannot update max health from vocation bonus.");
-        }
+    // 選択された職業のボーナスをプレイヤーに適用するメソッド
+    void ApplyVocationBuff(VocationData vocation)
+    {
+        ApplyStatusBonus(
+            vocation.strengthBonus,
+            vocation.dexterityBonus,
+            vocation.intelligenceBonus,
+            vocation.vitalityBonus
+        );
 
-        Debug.Log("職業ボーナス適用後のステータス: 筋力:" + this.strength + ", 器用さ:" + this.dexterity +
-                  ", 知力:" + this.intelligence + ", 生命力:" + this.vitality);
+        Debug.Log("職業ボーナス適用: " + vocation.vocationName +
+                  " 筋力+" + vocation.strengthBonus + ", 器用さ+" + vocation.dexterityBonus +
+                  ", 知力+" + vocation.intelligenceBonus + ", 生命力+" + vocation.vitalityBonus);
+
+        foreach (var synergy in vocation.constellationSynergyBonus)
+        {
+            // プレイヤーの星座が、相性ボーナスの対象星座と一致するかチェック
+            if (synergy.constellation == selectedConstellation)
+            {
+                ApplyStatusBonus(
+                    synergy.bonusStrength,
+                    synergy.bonusDexterity,
+                    synergy.bonusIntelligence,
+                    synergy.bonusVitality
+                );
+
+                Debug.Log($"星座相性ボーナス適用！{synergy.constellation.constellationName}との相性ボーナスを獲得しました。");
+                // ボーナスは一つだけ適用される想定
+                Debug.Log("相性ボーナス適用: " + vocation.vocationName +
+                 " 筋力+" + synergy.bonusStrength + ", 器用さ+" + synergy.bonusDexterity +
+                 ", 知力+" + synergy.bonusIntelligence + ", 生命力+" + synergy.bonusVitality);
+
+                break;
+            }
+        }
     }
 
     // レベルアップ処理 (将来的に追加)

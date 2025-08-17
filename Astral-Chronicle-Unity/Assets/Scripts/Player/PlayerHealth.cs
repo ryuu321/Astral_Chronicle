@@ -66,7 +66,9 @@ public class PlayerHealth : MonoBehaviour
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
-        gameObject.SetActive(false);
+        Awake();
+        uiManager.UpdateHealthBar(currentHealth, maxHealth);
+        //gameObject.SetActive(false);
     }
 
     public void ApplyInitialStatBonus(int strength, int dexterity, int intelligence, int vitality)

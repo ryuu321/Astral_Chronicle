@@ -1,203 +1,153 @@
 using UnityEngine;
-using UnityEngine.UI; // UI要素用
-using TMPro; // TextMeshPro用
-using System.Collections.Generic; // List<T> を使うため
+using TMPro;
+using UnityEngine.UI;
+using System.Collections.Generic;
 
 public class UIManager : MonoBehaviour
 {
     public static UIManager instance;
 
-    // UI参照
+    [Header("Dont't Destroy")]
+    public Canvas canvas_m;
+    public GameObject player;
+
     [Header("Game Over UI")]
     public GameObject gameOverUI;
-    public Button retryButton; // 追加: リトライボタンの参照
+    public Button retryButton;
 
     [Header("Constellation Selection UI")]
     public GameObject constellationSelectionPanel;
     public Transform constellationGridParent;
+    public GameObject constellationButtonPrefab;
 
     [Header("Vocation Selection UI")]
     public GameObject vocationSelectionPanel;
     public Transform vocationGridParent;
+    public GameObject vocationButtonPrefab;
 
-    [Header("C&V Button")]
-    public GameObject conAndVocButtonPrefab;
-
-    // 他のUI要素もここに移動
     [Header("Player Health UI")]
-    public Slider healthSlider; // PlayerHealthからPlayerHealthUIに移動
-    // public TextMeshProUGUI scoreText; // スコアUIが必要な場合
-
-    [Header("ゲーム時間表示UI")]
+    public Slider healthSlider;
     public TextMeshProUGUI gameTimeText;
+
+    // 修正: DialogueUI関連の参照を削除
+    // [Header("Dialogue UI")]
+    // public GameObject dialoguePanel;
+    // ... 他のDialogueUI関連の参照も削除
 
     void Awake()
     {
         if (instance == null)
         {
             instance = this;
-            // DontDestroyOnLoad(gameObject); // UIManagerもDontDestroyOnLoadにすることが多い
+            DontDestroyOnLoad(gameObject);
+            DontDestroyOnLoad(canvas_m);
+            DontDestroyOnLoad(player);
         }
         else
         {
             Destroy(gameObject);
+            Destroy(canvas_m);
+            Destroy(player);
         }
     }
 
     void Start()
     {
-        // UIの初期状態を設定
         gameOverUI.SetActive(false);
-        // 修正: retryButtonも初期状態で非表示にする
-        if (retryButton != null)
-        {
-            retryButton.gameObject.SetActive(false);
-        }
-        constellationSelectionPanel.SetActive(false); // 初期は非表示に
-        retryButton.onClick.AddListener(() => {
-            GameManager.instance.LoadCurrentScene(); // ボタンが押されたらこの中身が実行される
-        });
-        // 修正: gameTimeTextも初期状態で非表示にするか、適切な初期値に設定
-        if (gameTimeText != null)
-        {
-            gameTimeText.gameObject.SetActive(true); // ゲーム開始から表示させる
-            gameTimeText.text = "Age: 0, Month: 1"; // 初期表示
-        }
+        if (retryButton != null) retryButton.gameObject.SetActive(false);
+        if (constellationSelectionPanel != null) constellationSelectionPanel.SetActive(false);
+        if (vocationSelectionPanel != null) vocationSelectionPanel.SetActive(false);
+        if (gameTimeText != null) gameTimeText.gameObject.SetActive(true);
     }
 
-    // ---------- ゲームオーバーUI関連 ----------
     public void ShowGameOverUI()
     {
-        gameOverUI.SetActive(true);
-        // 修正: retryButtonも表示する
-        if (retryButton != null)
-        {
-            retryButton.gameObject.SetActive(true);
-        }
+        if (gameOverUI != null) gameOverUI.SetActive(true);
+        if (retryButton != null) retryButton.gameObject.SetActive(true);
+        retryButton.onClick.AddListener(() =>
+        { 
+            GameManager.instance.LoadCurrentScene();
+            HideGameOverUI();
+        });
     }
 
     public void HideGameOverUI()
     {
-        gameOverUI.SetActive(false);
-        // 修正: retryButtonも非表示にする
-        if (retryButton != null)
-        {
-            retryButton.gameObject.SetActive(false);
-        }
+        if (gameOverUI != null) gameOverUI.SetActive(false);
+        if (retryButton != null) retryButton.gameObject.SetActive(false);
     }
 
-    // ---------- 星座選択UI関連 ----------
     public void ShowConstellationSelectionUI(List<ConstellationData> allAvailableConstellations, System.Action<ConstellationData> onSelectCallback)
     {
-        if (constellationSelectionPanel == null || constellationGridParent == null || conAndVocButtonPrefab == null)
+        if (constellationSelectionPanel == null || constellationGridParent == null || constellationButtonPrefab == null)
         {
             Debug.LogError("UIManager: Constellation Selection UI references are not assigned!");
             return;
         }
 
         constellationSelectionPanel.SetActive(true);
-
-        // 既存ボタンをクリア (再表示される場合のため)
         foreach (Transform child in constellationGridParent)
         {
             Destroy(child.gameObject);
         }
 
-        // 表示可能な全ての星座データに基づいてボタンを生成
         if (allAvailableConstellations != null && allAvailableConstellations.Count > 0)
         {
             foreach (ConstellationData data in allAvailableConstellations)
             {
-                GameObject buttonGO = Instantiate(conAndVocButtonPrefab, constellationGridParent);
+                GameObject buttonGO = Instantiate(constellationButtonPrefab, constellationGridParent);
                 Button button = buttonGO.GetComponent<Button>();
                 TextMeshProUGUI buttonText = buttonGO.GetComponentInChildren<TextMeshProUGUI>();
-                Image buttonIcon = buttonGO.GetComponent<Image>(); // ボタン自体のImageコンポーネント (アイコン表示用)
-
                 if (buttonText != null) buttonText.text = data.constellationName;
 
-                // アイコンが設定されていれば表示 (ConstellationDataにiconフィールドがある前提)
-                if (buttonIcon != null && data.icon != null)
-                {
-                    buttonIcon.sprite = data.icon;
-                }
-
-                // ボタンクリック時にGameManagerのコールバックを呼び出す
                 button.onClick.AddListener(() =>
                 {
-                    onSelectCallback?.Invoke(data); // GameManagerに選択を通知
-                    HideConstellationSelectionUI(); // 選択後UIを隠す
+                    onSelectCallback?.Invoke(data);
+                    HideConstellationSelectionUI();
                 });
             }
-        }
-        else
-        {
-            Debug.LogWarning("Constellation Data List provided to UIManager is empty!");
         }
     }
 
     public void HideConstellationSelectionUI()
     {
-        if (constellationSelectionPanel != null)
-        {
-            constellationSelectionPanel.SetActive(false);
-        }
+        if (constellationSelectionPanel != null) constellationSelectionPanel.SetActive(false);
     }
 
-    // 新しいメソッドを追加
     public void ShowVocationSelectionUI(List<VocationData> vocations, System.Action<VocationData> onSelectCallback)
     {
-        if (vocationSelectionPanel == null || vocationGridParent == null || conAndVocButtonPrefab == null)
+        if (vocationSelectionPanel != null)
         {
-            Debug.LogError("UIManager: Vocation Selection UI references are not assigned!");
-            return;
-        }
-
-        vocationSelectionPanel.SetActive(true);
-
-        // 既存ボタンをクリア
-        foreach (Transform child in vocationGridParent)
-        {
-            Destroy(child.gameObject);
-        }
-
-        // ボタン生成
-        if (vocations != null && vocations.Count > 0)
-        {
-            foreach (VocationData data in vocations)
+            vocationSelectionPanel.SetActive(true);
+            foreach (Transform child in vocationGridParent)
             {
-                GameObject buttonGO = Instantiate(conAndVocButtonPrefab, vocationGridParent);
-                Button button = buttonGO.GetComponent<Button>();
-                TextMeshProUGUI buttonText = buttonGO.GetComponentInChildren<TextMeshProUGUI>();
-                Image buttonIcon = buttonGO.GetComponent<Image>(); // アイコン表示用
-
-                if (buttonText != null) buttonText.text = data.vocationName;
-                if (buttonIcon != null && data.icon != null)
-                {
-                    buttonIcon.sprite = data.icon;
-                }
-
-                button.onClick.AddListener(() =>
-                {
-                    onSelectCallback?.Invoke(data); // GameManagerに選択を通知
-                    HideVocationSelectionUI(); // 選択後UIを隠す
-                });
+                Destroy(child.gameObject);
             }
-        }
-        else
-        {
-            Debug.LogWarning("Vocation Data List provided to UIManager is empty!");
+
+            if (vocations != null && vocations.Count > 0)
+            {
+                foreach (VocationData data in vocations)
+                {
+                    GameObject buttonGO = Instantiate(vocationButtonPrefab, vocationGridParent);
+                    Button button = buttonGO.GetComponent<Button>();
+                    TextMeshProUGUI buttonText = buttonGO.GetComponentInChildren<TextMeshProUGUI>();
+                    if (buttonText != null) buttonText.text = data.vocationName;
+
+                    button.onClick.AddListener(() =>
+                    {
+                        onSelectCallback?.Invoke(data);
+                        HideVocationSelectionUI();
+                    });
+                }
+            }
         }
     }
 
     public void HideVocationSelectionUI()
     {
-        if (vocationSelectionPanel != null)
-        {
-            vocationSelectionPanel.SetActive(false);
-        }
+        if (vocationSelectionPanel != null) vocationSelectionPanel.SetActive(false);
     }
 
-    // ---------- 体力UI関連 ----------
     public void UpdateHealthBar(int currentHealth, int maxHealth)
     {
         if (healthSlider != null)
@@ -207,15 +157,11 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    // ---------- 時間UI関連 ----------
-    public void UpdateGameTimeDisplay(int year, int month)
+    public void UpdateGameTimeDisplay(int year, int month, int day)
     {
         if (gameTimeText != null)
         {
-            gameTimeText.text = $"Age: {year}, Month: {month + 1}"; // 月は0-11なので+1する
+            gameTimeText.text = $"Age: {year}, Month: {month}, Day: {day}";
         }
     }
-
-    // スコアUIの更新などもここに追加
-    // public void UpdateScoreDisplay(int score) { /* ... */ }
 }

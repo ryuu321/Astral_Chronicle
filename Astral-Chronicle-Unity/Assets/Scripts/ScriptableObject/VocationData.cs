@@ -6,6 +6,7 @@ using UnityEngine;
 public class VocationData : ScriptableObject
 {
     public string vocationName; // 職業名 (例: 戦士、魔法使い、商人)
+    public Sprite icon;
     [TextArea(3, 5)]
     public string description; // 職業の説明
 
@@ -23,5 +24,16 @@ public class VocationData : ScriptableObject
     public int requiredSocialExperience = 0;
 
     // 職業アイコンなど、追加したいデータがあればここに追加
-    public Sprite icon;
+    [Header("Constellation Synergy Bonus")]
+    public List<VocationSynergyBonus> constellationSynergyBonus;
+
+    [System.Serializable]
+    public struct VocationSynergyBonus
+    {
+        public ConstellationData constellation;// ボーナス対象の星座
+        public int bonusStrength;
+        public int bonusDexterity;  // 器用さボーナス
+        public int bonusIntelligence; // 知力ボーナス
+        public int bonusVitality;   // 生命力ボーナス
+    }
 }

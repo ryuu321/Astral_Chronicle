@@ -152,20 +152,6 @@ public class DialogueManager : MonoBehaviour
                 if (buttonText != null) buttonText.text = option.optionText;
                 button.onClick.AddListener(() => OnOptionSelected(option));
             }
-
-            //// Remove the listener for moving to the next dialogue, as buttons handle it
-            //if (InputManager.instance != null)
-            //{
-            //    InputManager.instance.OnInteractPressed -= OnOptionSelected;
-            //}
-        }
-        else
-        {
-            // No options, allow interaction to move to next entry
-            //if (InputManager.instance != null)
-            //{
-            //    InputManager.instance.OnInteractPressed += EndDialogue;
-            //}
         }
     }
 

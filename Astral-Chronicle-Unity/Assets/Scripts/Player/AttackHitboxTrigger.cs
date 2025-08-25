@@ -21,6 +21,16 @@ public class AttackHitboxTrigger : MonoBehaviour
             {
                 enemyHealth.TakeDamage(attackDamage);
             }
+            
+            if (AudioManager.instance != null)
+            {
+                AudioManager.instance.PlaySFX(AudioManager.instance.sfxHitSource, AudioManager.instance.sfxHit);
+                Debug.Log("Hit");
+            }
+            else
+            {
+                Debug.Log("NotHit");
+            }
         }
     }
 }

@@ -29,8 +29,8 @@ public class PlayerStatus : MonoBehaviour
     public int defense;
     public int magicPower;
 
-    private PlayerHealth playerHealth;
-
+    public PlayerHealth playerHealth;
+    private StatusUIController statusUIController;
     void Awake()
     {
         strength = 10;

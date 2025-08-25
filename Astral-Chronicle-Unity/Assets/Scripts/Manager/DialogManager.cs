@@ -30,6 +30,7 @@ public class DialogueManager : MonoBehaviour
     public Action onDialogueEndCallback;
 
     private PlayerControls playerControls;
+    public bool isDialogueActive = false;
 
     void Awake()
     {
@@ -79,6 +80,11 @@ public class DialogueManager : MonoBehaviour
     private void HandleInteraction(InputAction.CallbackContext context)
     {
         Debug.Log("Interact");
+        // 会話中でない場合は何もしない
+        if (!isDialogueActive)
+        {
+            return;
+        }
         // プレイヤーがインタラクトしたときにこのメソッドが呼び出されます
         // オプション（選択肢）がない場合にのみ、次の対話に進むようにチェックします
         if (currentDialogueData.dialogueEntries[currentDialogueEntryIndex].options == null ||
@@ -113,6 +119,7 @@ public class DialogueManager : MonoBehaviour
         currentDialogueData = dialogueData;
         currentDialogueEntryIndex = 1;
         onDialogueEndCallback = onEndCallback;
+        isDialogueActive = true; // 会話開始時にフラグをtrueに
 
         DisplayCurrentDialogue();
     }
@@ -170,6 +177,8 @@ public class DialogueManager : MonoBehaviour
     {
         if (dialoguePanel != null) dialoguePanel.SetActive(false);
         if (speakerPanel != null) speakerPanel.SetActive(false);
+
+        isDialogueActive = false; // 会話終了時にフラグをfalseに
 
         onDialogueEndCallback?.Invoke();
     }

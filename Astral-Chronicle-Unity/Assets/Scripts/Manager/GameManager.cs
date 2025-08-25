@@ -23,10 +23,10 @@ public class GameManager : MonoBehaviour
     public int daysPerGameMonth = 30;
     public int monthsPerGameYear = 12;
 
-    private float gameTimeTimer = 0f;
-    private int currentDay = 1;
-    private int currentMonth = 1;
-    private int currentYear = 0;
+    public float gameTimeTimer = 0f;
+    public int currentDay = 1;
+    public int currentMonth = 1;
+    public int currentYear = 0;
 
     [Header("—c­Šúİ’è")]
     public int childhoodYears = 5;

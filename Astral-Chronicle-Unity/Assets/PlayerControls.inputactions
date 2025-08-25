@@ -6,7 +6,7 @@
             "id": "2e836b91-78f5-444e-abfb-9fe3bd508d2a",
             "actions": [
                 {
-                    "name": "Move",
+                    "name": "OnMove",
                     "type": "Value",
                     "id": "3e3678e4-2651-403d-b149-435887615eda",
                     "expectedControlType": "Vector2",
@@ -15,9 +15,27 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "Attack",
+                    "name": "OnAttack",
                     "type": "Button",
                     "id": "4d2f88ca-039f-43fd-a11a-5ad2fadf0f45",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "OnStatus",
+                    "type": "Button",
+                    "id": "21ad153d-e69a-40d3-a271-fad636de3ea0",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "OnJump",
+                    "type": "Button",
+                    "id": "1d46bbdc-3ce6-4975-8461-78555167fe1d",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -32,7 +50,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Move",
+                    "action": "OnMove",
                     "isComposite": true,
                     "isPartOfComposite": false
                 },
@@ -43,7 +61,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Move",
+                    "action": "OnMove",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -54,7 +72,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Move",
+                    "action": "OnMove",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -65,7 +83,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Move",
+                    "action": "OnMove",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -76,7 +94,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Move",
+                    "action": "OnMove",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -87,7 +105,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Move",
+                    "action": "OnMove",
                     "isComposite": true,
                     "isPartOfComposite": false
                 },
@@ -98,7 +116,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Move",
+                    "action": "OnMove",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -109,7 +127,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Move",
+                    "action": "OnMove",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -120,7 +138,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Move",
+                    "action": "OnMove",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -131,7 +149,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Move",
+                    "action": "OnMove",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -142,7 +160,29 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Attack",
+                    "action": "OnAttack",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "576ee5c9-1941-4e47-98db-b4a954b3bbca",
+                    "path": "<Keyboard>/#(Q)",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "OnStatus",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "3f8d506b-4089-4384-a31a-b4e7b3abd797",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "OnJump",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

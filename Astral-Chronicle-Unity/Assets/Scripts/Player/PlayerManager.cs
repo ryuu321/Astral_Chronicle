@@ -8,9 +8,11 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] PlayerStatus status;
     [SerializeField] PlayerMovement movement;
     [SerializeField] PlayerAttack attack;
+    [SerializeField] StatusUIController statusUI;
 
     // Input Systemのコントロールクラスへの参照
     private PlayerControls playerControls;
+    private Animator animator;
 
     // プレイヤーの状態を管理するEnum
     public enum PlayerState { Idle, Moving, Attacking, Talking, Damaged }
@@ -23,22 +25,26 @@ public class PlayerManager : MonoBehaviour
         status = GetComponent<PlayerStatus>();
         movement = GetComponent<PlayerMovement>();
         attack = GetComponent<PlayerAttack>();
+        statusUI = GetComponent<StatusUIController>();
 
         // InputControlsのインスタンスを生成
         playerControls = new PlayerControls();
 
         // 初期状態を設定
         currentState = PlayerState.Idle;
+        animator = GetComponent<Animator>();
     }
 
     void OnEnable()
     {
         // 移動アクションのイベントを購読
-        playerControls.Player.Move.performed += OnMovePerformed;
-        playerControls.Player.Move.canceled += OnMoveCanceled;
+        playerControls.Player.OnMove.performed += OnMovePerformed;
+        playerControls.Player.OnMove.canceled += OnMoveCanceled;
 
         // 攻撃アクションのイベントを購読
-        playerControls.Player.Attack.performed += OnAttackPerformed;
+        playerControls.Player.OnAttack.performed += OnAttackPerformed;
+
+        playerControls.Player.OnStatus.performed += OnStatusPerformed;
 
         // アクションマップを有効化
         playerControls.Player.Enable();
@@ -47,9 +53,9 @@ public class PlayerManager : MonoBehaviour
     void OnDisable()
     {
         // イベントの購読を解除
-        playerControls.Player.Move.performed -= OnMovePerformed;
-        playerControls.Player.Move.canceled -= OnMoveCanceled;
-        playerControls.Player.Attack.performed -= OnAttackPerformed;
+        playerControls.Player.OnMove.performed -= OnMovePerformed;
+        playerControls.Player.OnMove.canceled -= OnMoveCanceled;
+        playerControls.Player.OnAttack.performed -= OnAttackPerformed;
 
         // アクションマップを無効化
         playerControls.Player.Disable();
@@ -58,23 +64,37 @@ public class PlayerManager : MonoBehaviour
     // Input Systemからのイベントハンドラー (引数あり)
     private void OnMovePerformed(InputAction.CallbackContext context)
     {
-        if (currentState != PlayerState.Attacking && currentState != PlayerState.Talking)
+        if (currentState != PlayerState.Talking)
         {
+            animator.SetBool("Move", true);
             movement.HandleMoveInput(context.ReadValue<Vector2>());
+            currentState = PlayerState.Moving;
         }
     }
 
     private void OnMoveCanceled(InputAction.CallbackContext context)
     {
+        animator.SetBool("Move", false);
         // 入力が終わったら動きを止める
         movement.HandleMoveInput(Vector2.zero);
+        currentState = PlayerState.Idle;
     }
 
     private void OnAttackPerformed(InputAction.CallbackContext context)
     {
-        if (currentState != PlayerState.Attacking && currentState != PlayerState.Talking)
+        if (currentState != PlayerState.Talking)
         {
+            animator.SetTrigger("Attack");
             attack.HandleAttack();
+            currentState = PlayerState.Attacking;
+        }
+    }
+
+    private void OnStatusPerformed(InputAction.CallbackContext context)
+    {
+        if(currentState != PlayerState.Moving && currentState != PlayerState.Attacking)
+        {
+            statusUI.HandletatusWindow();
         }
     }
 

@@ -16,32 +16,32 @@ public class PlayerMovement : MonoBehaviour
 
     public void HandleMoveInput(Vector2 moveVector)
     {
-        // ƒvƒŒƒCƒ„[‚ÌˆÚ“®ˆ—
-        if (moveVector.x < 0) // ¶•ûŒü‚ÖˆÚ“®‚µ‚Ä‚¢‚ê‚Î
+        // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ç§»å‹•å‡¦ç†
+        if (moveVector.x < 0) // å·¦æ–¹å‘ã¸ç§»å‹•ã—ã¦ã„ã‚Œã°
         {
             spriteRenderer.flipX = true;
         }
-        else if (moveVector.x > 0) // ‰E•ûŒü‚ÖˆÚ“®‚µ‚Ä‚¢‚ê‚Î
+        else if (moveVector.x > 0) // å³æ–¹å‘ã¸ç§»å‹•ã—ã¦ã„ã‚Œã°
         {
             spriteRenderer.flipX = false;
         }
         Vector2 movement = moveVector * moveSpeed;
-        rb.velocity = movement;
+        rb.linearVelocity = movement;
     }
 }
 
-// //--- ‚±‚±‚©‚ç’Ç‰Á: •`‰æ‡˜‚Ì“®“I‚È’²® ---
-// //•`‰æ‡˜‚ÍAƒLƒƒƒ‰ƒNƒ^[‚ÌYÀ•W‚ÉŠî‚Ã‚¢‚Ä“®“I‚É•ÏX‚·‚é‚±‚Æ‚ÅA
-// //‰œ‚É‚ ‚é‚à‚Ì‚ªè‘O‚É‚ ‚é‚à‚Ì‚æ‚èu‰œ‚É•`‰æv‚³‚ê‚é‚æ‚¤‚ÉŒ©‚¹‚Ü‚·B
+// //--- ã“ã“ã‹ã‚‰è¿½åŠ : æç”»é †åºã®å‹•çš„ãªèª¿æ•´ ---
+// //æç”»é †åºã¯ã€ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã®Yåº§æ¨™ã«åŸºã¥ã„ã¦å‹•çš„ã«å¤‰æ›´ã™ã‚‹ã“ã¨ã§ã€
+// //å¥¥ã«ã‚ã‚‹ã‚‚ã®ãŒæ‰‹å‰ã«ã‚ã‚‹ã‚‚ã®ã‚ˆã‚Šã€Œå¥¥ã«æç”»ã€ã•ã‚Œã‚‹ã‚ˆã†ã«è¦‹ã›ã¾ã™ã€‚
 //void LateUpdate()
 //{
-//    // SpriteRenderer‚ğæ“¾iŠù‚ÉStart‚Åæ“¾Ï‚İ‚È‚ç‚»‚±‚©‚çg‚¤j
+//    // SpriteRendererã‚’å–å¾—ï¼ˆæ—¢ã«Startã§å–å¾—æ¸ˆã¿ãªã‚‰ãã“ã‹ã‚‰ä½¿ã†ï¼‰
 //    SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
 //    if (spriteRenderer != null)
 //    {
-//        // YÀ•W‚ª¬‚³‚¢i‰æ–Ê‚Ì‰œ‚É‚ ‚éj‚Ù‚ÇASorting Order‚ğ‘å‚«‚­‚·‚é
-//        // —á‚¦‚ÎA-10000‚©‚ç0‚Ü‚Å‚Ì”ÍˆÍ‚ÅMapping‚·‚é
-//        // ‹ï‘Ì“I‚È”ÍˆÍ‚ÍƒQ[ƒ€‚ÌYÀ•W”ÍˆÍ‚É‡‚í‚¹‚Ä’²®
+//        // Yåº§æ¨™ãŒå°ã•ã„ï¼ˆç”»é¢ã®å¥¥ã«ã‚ã‚‹ï¼‰ã»ã©ã€Sorting Orderã‚’å¤§ããã™ã‚‹
+//        // ä¾‹ãˆã°ã€-10000ã‹ã‚‰0ã¾ã§ã®ç¯„å›²ã§Mappingã™ã‚‹
+//        // å…·ä½“çš„ãªç¯„å›²ã¯ã‚²ãƒ¼ãƒ ã®Yåº§æ¨™ç¯„å›²ã«åˆã‚ã›ã¦èª¿æ•´
 //        int sortingOrder = -(int)(transform.position.y * 100);
 //        spriteRenderer.sortingOrder = sortingOrder;
 //    }

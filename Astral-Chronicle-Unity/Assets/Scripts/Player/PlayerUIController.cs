@@ -35,7 +35,7 @@ public class StatusUIController : MonoBehaviour
     void Awake()
     {
         // PlayerStatusコンポーネントを自動で取得
-        playerStatus = FindObjectOfType<PlayerStatus>();
+        playerStatus = GetComponent<PlayerStatus>();
         if (playerStatus == null)
         {
             Debug.LogError("StatusUIController: PlayerStatus component not found in the scene.");

@@ -4,20 +4,20 @@ using UnityEngine;
 
 public class EnemyAI : MonoBehaviour
 {
-    public float moveSpeed = 2f; // “G‚ÌˆÚ“®‘¬“x
-    public float detectionRange = 5f; // ƒvƒŒƒCƒ„[‚ğŒŸ’m‚·‚é”ÍˆÍ
-    public float stopDistance = 0.1f; // ƒvƒŒƒCƒ„[‚É‚Ç‚ê‚­‚ç‚¢‹ß‚Ã‚¢‚½‚ç~‚Ü‚é‚©
+    public float moveSpeed = 2f; // æ•µã®ç§»å‹•é€Ÿåº¦
+    public float detectionRange = 5f; // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’æ¤œçŸ¥ã™ã‚‹ç¯„å›²
+    public float stopDistance = 0.1f; // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã«ã©ã‚Œãã‚‰ã„è¿‘ã¥ã„ãŸã‚‰æ­¢ã¾ã‚‹ã‹
 
-    private Transform playerTransform; // ƒvƒŒƒCƒ„[‚ÌTransform‚Ö‚ÌQÆ
+    private Transform playerTransform; // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®Transformã¸ã®å‚ç…§
     private Rigidbody2D rb;
-    private SpriteRenderer spriteRenderer; // “G‚ÌƒXƒvƒ‰ƒCƒg‚ğ”½“]‚³‚¹‚é‚½‚ß
+    private SpriteRenderer spriteRenderer; // æ•µã®ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã‚’åè»¢ã•ã›ã‚‹ãŸã‚
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
 
-        // ƒV[ƒ““à‚Ì"Player"ƒ^ƒO‚ğ‚ÂƒIƒuƒWƒFƒNƒg‚ğ’T‚·
+        // ã‚·ãƒ¼ãƒ³å†…ã®"Player"ã‚¿ã‚°ã‚’æŒã¤ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’æ¢ã™
         GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
         if (playerObject != null)
         {
@@ -26,7 +26,7 @@ public class EnemyAI : MonoBehaviour
         else
         {
             Debug.LogWarning("EnemyAI: Player object not found! Make sure your player has the 'Player' tag.");
-            enabled = false; // ƒvƒŒƒCƒ„[‚ªŒ©‚Â‚©‚ç‚È‚¢ê‡‚ÍAI‚ğ–³Œø‚É‚·‚é
+            enabled = false; // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒè¦‹ã¤ã‹ã‚‰ãªã„å ´åˆã¯AIã‚’ç„¡åŠ¹ã«ã™ã‚‹
         }
 
         if (rb == null || spriteRenderer == null)
@@ -40,68 +40,68 @@ public class EnemyAI : MonoBehaviour
     {
         if (playerTransform == null) return;
 
-        // ƒvƒŒƒCƒ„[‚Æ“G‚Ì‹——£‚ğŒvZ
+        // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¨æ•µã®è·é›¢ã‚’è¨ˆç®—
         float distanceToPlayer = Vector2.Distance(transform.position, playerTransform.position);
 
-        // ƒvƒŒƒCƒ„[‚ªŒŸ’m”ÍˆÍ“à‚É‚¢‚é‚©ƒ`ƒFƒbƒN
+        // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒæ¤œçŸ¥ç¯„å›²å†…ã«ã„ã‚‹ã‹ãƒã‚§ãƒƒã‚¯
         if (distanceToPlayer <= detectionRange)
         {
-            // ƒvƒŒƒCƒ„[‚É\•ª‹ß‚Ã‚¢‚Ä‚¢‚È‚¢ê‡‚Ì‚İˆÚ“®
+            // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã«ååˆ†è¿‘ã¥ã„ã¦ã„ãªã„å ´åˆã®ã¿ç§»å‹•
             if (distanceToPlayer > stopDistance)
             {
-                // ƒvƒŒƒCƒ„[‚Ì•ûŒü‚ÖˆÚ“®ƒxƒNƒgƒ‹‚ğŒvZ
+                // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®æ–¹å‘ã¸ç§»å‹•ãƒ™ã‚¯ãƒˆãƒ«ã‚’è¨ˆç®—
                 Vector2 directionToPlayer = (playerTransform.position - transform.position).normalized;
 
-                // Rigidbody2D‚ğg‚Á‚ÄˆÚ“®
-                rb.velocity = directionToPlayer * moveSpeed;
+                // Rigidbody2Dã‚’ä½¿ã£ã¦ç§»å‹•
+                rb.linearVelocity = directionToPlayer * moveSpeed;
 
-                // “G‚ÌƒXƒvƒ‰ƒCƒg‚Ì¶‰E”½“]iƒvƒŒƒCƒ„[‚Æ“¯‚¶ƒƒWƒbƒNj
-                if (directionToPlayer.x < 0) // ¶•ûŒü‚ÖˆÚ“®‚µ‚Ä‚¢‚ê‚Î
+                // æ•µã®ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã®å·¦å³åè»¢ï¼ˆãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¨åŒã˜ãƒ­ã‚¸ãƒƒã‚¯ï¼‰
+                if (directionToPlayer.x < 0) // å·¦æ–¹å‘ã¸ç§»å‹•ã—ã¦ã„ã‚Œã°
                 {
                     spriteRenderer.flipX = true;
                 }
-                else if (directionToPlayer.x > 0) // ‰E•ûŒü‚ÖˆÚ“®‚µ‚Ä‚¢‚ê‚Î
+                else if (directionToPlayer.x > 0) // å³æ–¹å‘ã¸ç§»å‹•ã—ã¦ã„ã‚Œã°
                 {
                     spriteRenderer.flipX = false;
                 }
             }
             else
             {
-                // ƒvƒŒƒCƒ„[‚É\•ª‹ß‚Ã‚¢‚½‚ç’â~
-                rb.velocity = Vector2.zero;
+                // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã«ååˆ†è¿‘ã¥ã„ãŸã‚‰åœæ­¢
+                rb.linearVelocity = Vector2.zero;
             }
         }
         else
         {
-            // ƒvƒŒƒCƒ„[‚ªŒŸ’m”ÍˆÍŠO‚È‚ç’â~
+            // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒæ¤œçŸ¥ç¯„å›²å¤–ãªã‚‰åœæ­¢
             rb.velocity = Vector2.zero;
         }
     }
 
-    // “G‚ªƒvƒŒƒCƒ„[‚ÉG‚ê‚½‚Æ‚«‚Ìˆ—
+    // æ•µãŒãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã«è§¦ã‚ŒãŸã¨ãã®å‡¦ç†
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        // Õ“Ë‚µ‚½ƒIƒuƒWƒFƒNƒg‚ª"Player"ƒ^ƒO‚ğ‚Á‚Ä‚¢‚é‚©Šm”F
+        // è¡çªã—ãŸã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆãŒ"Player"ã‚¿ã‚°ã‚’æŒã£ã¦ã„ã‚‹ã‹ç¢ºèª
         if (collision.gameObject.CompareTag("Player"))
         {
-            // ƒvƒŒƒCƒ„[‚ÌPlayerHealthƒRƒ“ƒ|[ƒlƒ“ƒg‚ğæ“¾
+            // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®PlayerHealthã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’å–å¾—
             PlayerHealth playerHealth = collision.gameObject.GetComponent<PlayerHealth>();
 
-            // PlayerHealthƒRƒ“ƒ|[ƒlƒ“ƒg‚ª‘¶İ‚·‚é‚©Šm”F
+            // PlayerHealthã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆãŒå­˜åœ¨ã™ã‚‹ã‹ç¢ºèª
             if (playerHealth != null)
             {
-                // ƒvƒŒƒCƒ„[‚Éƒ_ƒ[ƒW‚ğ—^‚¦‚é
-                int damageAmount = 10; // ‚±‚±‚Å—^‚¦‚éƒ_ƒ[ƒW—Ê‚ğİ’èi—á: 10ƒ_ƒ[ƒWj
+                // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã«ãƒ€ãƒ¡ãƒ¼ã‚¸ã‚’ä¸ãˆã‚‹
+                int damageAmount = 10; // ã“ã“ã§ä¸ãˆã‚‹ãƒ€ãƒ¡ãƒ¼ã‚¸é‡ã‚’è¨­å®šï¼ˆä¾‹: 10ãƒ€ãƒ¡ãƒ¼ã‚¸ï¼‰
                 playerHealth.TakeDamage(damageAmount);
-                Debug.Log("“G‚ªƒvƒŒƒCƒ„[‚ÉÚG‚µA" + damageAmount + " ƒ_ƒ[ƒW‚ğ—^‚¦‚Ü‚µ‚½B");
+                Debug.Log("æ•µãŒãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã«æ¥è§¦ã—ã€" + damageAmount + " ãƒ€ãƒ¡ãƒ¼ã‚¸ã‚’ä¸ãˆã¾ã—ãŸã€‚");
             }
             else
             {
-                Debug.LogWarning("PlayerHealthƒRƒ“ƒ|[ƒlƒ“ƒg‚ªƒvƒŒƒCƒ„[ƒIƒuƒWƒFƒNƒg‚ÉŒ©‚Â‚©‚è‚Ü‚¹‚ñI");
+                Debug.LogWarning("PlayerHealthã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆãŒãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã«è¦‹ã¤ã‹ã‚Šã¾ã›ã‚“ï¼");
             }
         }
     }
 
-    // •`‰æ‡˜‚Ì“®“I‚È’²®‚ÍDynamicSortingOrderƒXƒNƒŠƒvƒg‚É”C‚¹‚é
-    // ‚±‚ÌƒXƒNƒŠƒvƒg‚Å‚Í“Á‚Éˆ—‚µ‚È‚¢
+    // æç”»é †åºã®å‹•çš„ãªèª¿æ•´ã¯DynamicSortingOrderã‚¹ã‚¯ãƒªãƒ—ãƒˆã«ä»»ã›ã‚‹
+    // ã“ã®ã‚¹ã‚¯ãƒªãƒ—ãƒˆã§ã¯ç‰¹ã«å‡¦ç†ã—ãªã„
 }

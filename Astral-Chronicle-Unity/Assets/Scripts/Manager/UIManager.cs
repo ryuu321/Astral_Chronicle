@@ -29,6 +29,19 @@ public class UIManager : MonoBehaviour
     public Slider healthSlider;
     public TextMeshProUGUI gameTimeText;
 
+    [Header("Character Creation UI")]
+    public GameObject characterCreationPanel;
+    public TMP_InputField nameInputField;
+    // 各パーツの選択ボタンやプレビューUIの参照を追加
+    public Button hairNextButton;
+    public Button hairPrevButton;
+
+    public PlayerAppearanceController appearanceController;
+    // データベースへの参照
+    public PlayerAppearanceDatabase appearanceDatabase;
+
+    private int currentHairIndex = 0;
+
     // 修正: DialogueUI関連の参照を削除
     // [Header("Dialogue UI")]
     // public GameObject dialoguePanel;
@@ -58,6 +71,12 @@ public class UIManager : MonoBehaviour
         if (constellationSelectionPanel != null) constellationSelectionPanel.SetActive(false);
         if (vocationSelectionPanel != null) vocationSelectionPanel.SetActive(false);
         if (gameTimeText != null) gameTimeText.gameObject.SetActive(true);
+        if (appearanceController != null && appearanceDatabase != null)
+        {
+            // UIのボタンにイベントを登録
+            hairNextButton.onClick.AddListener(NextHairStyle);
+            hairPrevButton.onClick.AddListener(PrevHairStyle);
+        }
     }
 
     public void ShowGameOverUI()
@@ -163,5 +182,17 @@ public class UIManager : MonoBehaviour
         {
             gameTimeText.text = $"Age: {year}, Month: {month}, Day: {day}";
         }
+    }
+
+    public void NextHairStyle()
+    {
+        currentHairIndex = (currentHairIndex + 1) % appearanceDatabase.hairStyles.Count;
+        appearanceController.UpdateAppearance(appearanceDatabase.hairStyles[currentHairIndex], null, null);
+    }
+
+    public void PrevHairStyle()
+    {
+        currentHairIndex = (currentHairIndex - 1 + appearanceDatabase.hairStyles.Count) % appearanceDatabase.hairStyles.Count;
+        appearanceController.UpdateAppearance(appearanceDatabase.hairStyles[currentHairIndex], null, null);
     }
 }

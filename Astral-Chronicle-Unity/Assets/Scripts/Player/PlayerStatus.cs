@@ -33,13 +33,16 @@ public class PlayerStatus : MonoBehaviour
     private StatusUIController statusUIController;
     void Awake()
     {
-        strength = 10;
-        dexterity = 10;
-        intelligence = 10;
-        vitality = 10;
-
         playerHealth = GetComponent<PlayerHealth>();
         CalculateDerivedStats();
+    }
+
+    public void InitializeStatus(int strength,int dexterity, int intelligence, int vitality)
+    {
+        this.strength = strength;
+        this.dexterity = dexterity;
+        this.intelligence = intelligence;
+        this.vitality = vitality;
     }
 
     void CalculateDerivedStats()

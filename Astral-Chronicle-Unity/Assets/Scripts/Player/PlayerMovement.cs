@@ -6,15 +6,25 @@ public class PlayerMovement : MonoBehaviour
 {
     public float moveSpeed = 5f;
     private Rigidbody2D rb;
+    private SpriteRenderer spriteRenderer;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     public void HandleMoveInput(Vector2 moveVector)
     {
         // プレイヤーの移動処理
+        if (moveVector.x < 0) // 左方向へ移動していれば
+        {
+            spriteRenderer.flipX = true;
+        }
+        else if (moveVector.x > 0) // 右方向へ移動していれば
+        {
+            spriteRenderer.flipX = false;
+        }
         Vector2 movement = moveVector * moveSpeed;
         rb.velocity = movement;
     }

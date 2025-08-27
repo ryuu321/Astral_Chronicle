@@ -85,8 +85,13 @@ public class GameManager : MonoBehaviour
         {
             Debug.LogWarning("Player object with 'Player' tag not found!");
         }
+        if (SpawnManager.instance != null)
+        {
+            SpawnManager.instance.SpawnAllNPCsInScene();
+            SpawnManager.instance.SpawnAllMonstersInScene();
+        }
 
-        StartConstellationSelectionProcess();
+        
     }
 
     void Update()

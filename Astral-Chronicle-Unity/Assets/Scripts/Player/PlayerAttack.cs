@@ -9,9 +9,11 @@ public class PlayerAttack : MonoBehaviour
 
     private float nextAttackTime = 0f;
     public Vector2 attackDirection; // 攻撃方向を保持する変数
+    private SpriteRenderer spriteRenderer;
 
     void Awake()
     {
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     // PlayerManagerから呼び出される攻撃処理のメソッド
@@ -69,6 +71,14 @@ public class PlayerAttack : MonoBehaviour
         direction.x = (mousePosition.x - pipod.transform.position.x);
         direction.y = (mousePosition.y - pipod.transform.position.y-5);
         direction = direction.normalized;
+        if (direction.x < 0)
+        {
+            spriteRenderer.flipX = true;
+        }
+        else
+        {
+            spriteRenderer.flipY = false;
+        }
         return direction;
     }
 }

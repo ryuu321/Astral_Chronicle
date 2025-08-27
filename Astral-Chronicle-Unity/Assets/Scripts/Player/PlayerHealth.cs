@@ -4,14 +4,20 @@ using UnityEngine.UI;
 
 public class PlayerHealth : MonoBehaviour
 {
-    public int maxHealth = 100;
     public int currentHealth;
+    public int maxHealth;
 
     private UIManager uiManager;
 
     void Awake()
     {
+        
+    }
+
+    public void InitializeHealth(int maxHealth)
+    {
         currentHealth = maxHealth;
+        this.maxHealth = maxHealth;
     }
 
     public void SetUIManager(UIManager manager)
